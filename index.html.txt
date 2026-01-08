@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gravity Lab VR</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v4.0.1/dist/aframe-physics-system.min.js"></script>
+  <script src="https://unpkg.com/aframe-particle-system-component@1.0.11/dist/aframe-particle-system-component.min.js"></script>
+</head>
+<body>
+  <a-scene 
+    physics="gravity: -9.8; debug: false"
+    renderer="antialias: true; colorManagement: true"
+    loading-screen="dotsColor: #00D9FF; backgroundColor: #0A1929">
+    
+    <a-assets timeout="10000">
+      <img id="grid-texture" src="data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%23f0f0f0'/%3E%3Cpath d='M0 0h50v50H0zM50 50h50v50H50z' fill='%23e0e0e0'/%3E%3C/svg%3E" crossorigin="anonymous">
+    </a-assets>
+
+    <!-- Sky -->
+    <a-sky color="#E8F0F7"></a-sky>
+
+    <!-- Lighting -->
+    <a-entity light="type: ambient; color: #FFFFFF; intensity: 0.7"></a-entity>
+    <a-entity light="type: directional; color: #FFFFFF; intensity: 0.5" position="5 10 5"></a-entity>
+    <a-entity light="type: point; color: #00D9FF; intensity: 0.3; distance: 20" position="0 3 0"></a-entity>
+
+    <!-- Floor -->
+    <a-plane 
+      position="0 0 0" 
+      rotation="-90 0 0" 
+      width="30" 
+      height="30" 
+      color="#FFFFFF"
+      metalness="0.3"
+      roughness="0.7"
+      src="#grid-texture"
+      repeat="15 15"
+      static-body>
+    </a-plane>
+
+    <!-- Grid lines for better orientation -->
+    <a-entity id="grid-lines" position="0 0.01 0">
+      <a-plane position="0 0 0" rotation="-90 0 0" width="30" height="0.05" color="#3498DB" opacity="0.3"></a-plane>
+      <a-plane position="0 0 5" rotation="-90 0 0" width="30" height="0.05" color="#3498DB" opacity="0.3"></a-plane>
+      <a-plane position="0 0 -5" rotation="-90 0 0" width="30" height="0.05" color="#3498DB" opacity="0.3"></a-plane>
+      <a-plane position="5 0 0" rotation="-90 90 0" width="30" height="0.05" color="#3498DB" opacity="0.3"></a-plane>
+      <a-plane position="-5 0 0" rotation="-90 90 0" width="30" height="0.05" color="#3498DB" opacity="0.3"></a-plane>
+    </a-entity>
+
+    <!-- Walls (invisible but with physics) -->
+    <a-box position="0 2 -15" width="30" height="4" depth="0.5" opacity="0" static-body></a-box>
+    <a-box position="0 2 15" width="30" height="4" depth="0.5" opacity="0" static-body></a-box>
+    <a-box position="-15 2 0" width="0.5" height="4" depth="30" opacity="0" static-body></a-box>
+    <a-box position="15 2 0" width="0.5" height="4" depth="30" opacity="0" static-body></a-box>
+
+    <!-- START EMITTER -->
+    <a-entity id="emitter" position="-4 0 -4">
+      <!-- Base platform -->
+      <a-cylinder 
+        radius="0.6" 
+        height="0.15" 
+        color="#2C3E50"
+        metalness="0.8"
+        roughness="0.3"
+        static-body>
+      </a-cylinder>
+      
+      <!-- Holographic cylinder -->
+      <a-cylinder 
+        radius="0.5" 
+        height="1.5" 
+        position="0 0.75 0"
+        opacity="0.4" 
+        color="#FF6B35"
+        transparent="true"
+        shader="flat">
+        <a-animation
+          attribute="opacity"
+          from="0.3"
+          to="0.7"
+          dur="1500"
+          direction="alternate"
+          repeat="indefinite">
+        </a-animation>
+      </a-cylinder>
+      
+      <!-- Particles -->
+      <a-entity
+        particle-system="preset: dust; color: #FF6B35; size: 0.2; particleCount: 30">
+      </a-entity>
+      
+      <!-- Label -->
+      <a-text 
+        value="START" 
+        position="0 1.8 0" 
+        align="center" 
+        color="#FF6B35" 
+        width="2.5"
+        shader="flat">
+      </a-text>
+    </a-entity>
+
+    <!-- GOAL ZONE -->
+    <a-entity id="goal" position="4 0 4">
+      <!-- Base -->
+      <a-cylinder 
+        radius="1" 
+        height="0.2" 
+        color="#00D9FF"
+        metalness="0.9"
+        roughness="0.2"
+        static-body
+        goal-zone>
+      </a-cylinder>
+      
+      <!-- Animated ring -->
+      <a-torus 
+        radius="1" 
+        radius-tubular="0.08" 
+        position="0 0.15 0"
+        color="#00D9FF"
+        opacity="0.7"
+        shader="flat">
+        <a-animation
+          attribute="rotation"
+          to="0 360 0"
+          dur="3000"
+          easing="linear"
+          repeat="indefinite">
+        </a-animation>
+      </a-torus>
+      
+      <!-- Particles -->
+      <a-entity
+        particle-system="preset: default; color: #00D9FF; size: 0.3; particleCount: 50; maxAge: 1.5">
+      </a-entity>
+      
+      <!-- Label -->
+      <a-text 
+        value="GOAL" 
+        position="0 1.5 0" 
+        align="center" 
+        color="#00D9FF" 
+        width="2.5"
+        shader="flat">
+      </a-text>
+    </a-entity>
+
+    <!-- Containers -->
+    <a-entity id="ball-container"></a-entity>
+    <a-entity id="tools-container"></a-entity>
+
+    <!-- VR Camera Rig -->
+    <a-entity id="rig" position="0 1.6 8">
+      <a-camera id="camera" look-controls>
+        <!-- UI Panel -->
+        <a-entity id="ui-panel" position="0 -0.2 -1.5">
+          <!-- Background -->
+          <a-plane 
+            width="2.5" 
+            height="1.8" 
+            color="#0A1929" 
+            opacity="0.9"
+            shader="flat">
+          </a-plane>
+          
+          <!-- Title -->
+          <a-plane width="2.4" height="0.3" position="0 0.75 0.01" color="#1E3A5F" opacity="0.9" shader="flat"></a-plane>
+          <a-text 
+            value="GRAVITY LAB" 
+            position="0 0.75 0.02"
+            align="center" 
+            color="#00D9FF" 
+            width="2.2"
+            shader="flat">
+          </a-text>
+          
+          <!-- Tool Buttons -->
+          <a-entity id="tools-row" position="0 0.35 0">
+            <!-- RAMP -->
+            <a-entity position="-0.8 0 0.02" class="tool-btn" data-tool="ramp">
+              <a-box 
+                width="0.45" 
+                height="0.4" 
+                depth="0.06" 
+                color="#FF6B35"
+                metalness="0.7"
+                roughness="0.3">
+              </a-box>
+              <a-text value="RAMP" position="0 -0.28 0" align="center" color="#FF6B35" width="0.9" shader="flat"></a-text>
+            </a-entity>
+            
+            <!-- FAN -->
+            <a-entity position="0 0 0.02" class="tool-btn" data-tool="fan">
+              <a-box 
+                width="0.45" 
+                height="0.4" 
+                depth="0.06" 
+                color="#4ECDC4"
+                metalness="0.7"
+                roughness="0.3">
+              </a-box>
+              <a-cylinder 
+                radius="0.12" 
+                height="0.03" 
+                position="0 0 0.04"
+                color="#FFFFFF"
+                shader="flat">
+                <a-animation
+                  attribute="rotation"
+                  to="0 0 360"
+                  dur="1500"
+                  easing="linear"
+                  repeat="indefinite">
+                </a-animation>
+              </a-cylinder>
+              <a-text value="FAN" position="0 -0.28 0" align="center" color="#4ECDC4" width="0.9" shader="flat"></a-text>
+            </a-entity>
+            
+            <!-- TELEPORTER -->
+            <a-entity position="0.8 0 0.02" class="tool-btn" data-tool="teleporter">
+              <a-box 
+                width="0.45" 
+                height="0.4" 
+                depth="0.06" 
+                color="#9B59B6"
+                metalness="0.7"
+                roughness="0.3">
+              </a-box>
+              <a-ring 
+                radius-inner="0.08" 
+                radius-outer="0.13" 
+                position="0 0 0.04"
+                color="#FFFFFF"
+                shader="flat">
+                <a-animation
+                  attribute="scale"
+                  from="0.8 0.8 0.8"
+                  to="1.2 1.2 1.2"
+                  dur="1000"
+                  direction="alternate"
+                  repeat="indefinite">
+                </a-animation>
+              </a-ring>
+              <a-text value="PORT" position="0 -0.28 0" align="center" color="#9B59B6" width="0.9" shader="flat"></a-text>
+            </a-entity>
+          </a-entity>
+          
+          <!-- Action Buttons -->
+          <a-entity id="actions-row" position="0 -0.35 0">
+            <!-- PLAY -->
+            <a-entity position="-0.55 0 0.02" id="btn-start" class="action-btn">
+              <a-box 
+                width="0.7" 
+                height="0.35" 
+                depth="0.08" 
+                color="#00C853"
+                metalness="0.8"
+                roughness="0.2">
+              </a-box>
+              <a-text value="PLAY" position="0 0 0.05" align="center" color="#FFFFFF" width="1.4" shader="flat"></a-text>
+            </a-entity>
+            
+            <!-- RESET -->
+            <a-entity position="0.55 0 0.02" id="btn-reset" class="action-btn">
+              <a-box 
+                width="0.7" 
+                height="0.35" 
+                depth="0.08" 
+                color="#E74C3C"
+                metalness="0.8"
+                roughness="0.2">
+              </a-box>
+              <a-text value="RESET" position="0 0 0.05" align="center" color="#FFFFFF" width="1.4" shader="flat"></a-text>
+            </a-entity>
+          </a-entity>
+          
+          <!-- Instructions -->
+          <a-text 
+            value="Trigger: Select | Grip: Place | Stick: Rotate" 
+            position="0 -0.75 0.01"
+            align="center" 
+            color="#AAAAAA" 
+            width="2.2"
+            shader="flat"
+            scale="0.7 0.7 0.7">
+          </a-text>
+        </a-entity>
+      </a-camera>
+
+      <!-- Left Controller -->
+      <a-entity 
+        id="leftController"
+        oculus-touch-controls="hand: left"
+        laser-controls="hand: left"
+        raycaster="objects: .tool-btn, .action-btn; far: 15; lineColor: #00D9FF; lineOpacity: 0.75"
+        controller-interaction>
+      </a-entity>
+
+      <!-- Right Controller -->
+      <a-entity 
+        id="rightController"
+        oculus-touch-controls="hand: right"
+        laser-controls="hand: right"
+        raycaster="objects: .tool-btn, .action-btn; far: 15; lineColor: #FF6B35; lineOpacity: 0.75"
+        controller-interaction>
+      </a-entity>
+    </a-entity>
+
+    <!-- Status Display -->
+    <a-entity id="status-hud" position="0 3.2 -5">
+      <a-plane width="3.5" height="0.7" color="#0A1929" opacity="0.85" shader="flat"></a-plane>
+      <a-text 
+        id="state-display" 
+        value="MODE: EDIT" 
+        position="0 0 0.01"
+        align="center" 
+        color="#00D9FF" 
+        width="6"
+        shader="flat">
+      </a-text>
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+    // Wait for scene to load
+    const sceneEl = document.querySelector('a-scene');
+    
+    sceneEl.addEventListener('loaded', function() {
+      console.log('✅ Scene loaded successfully!');
+      initGame();
+    });
+
+    // Global Game State
+    const GameState = {
+      mode: 'edit',
+      selectedTool: null,
+      ball: null,
+      placedTools: [],
+      teleporters: [],
+      goalReached: false,
+      sceneReady: false
+    };
+
+    function initGame() {
+      GameState.sceneReady = true;
+      console.log('🎮 Gravity Lab initialized!');
+      console.log('📱 Controls:');
+      console.log('  - TRIGGER: Select tools/buttons');
+      console.log('  - GRIP: Place selected tool');
+      console.log('  - THUMBSTICK: Rotate objects');
+    }
+
+    // Goal Zone Component
+    AFRAME.registerComponent('goal-zone', {
+      init: function() {
+        this.el.addEventListener('collide', (e) => {
+          if (e.detail.body && e.detail.body.el && e.detail.body.el.classList.contains('ball')) {
+            if (!GameState.goalReached) {
+              GameState.goalReached = true;
+              this.celebrate();
+            }
+          }
+        });
+      },
+      celebrate: function() {
+        console.log('🎯 GOAL REACHED!');
+        
+        const goal = this.el;
+        
+        // Scale animation
+        goal.setAttribute('animation__celebrate', {
+          property: 'scale',
+          to: '1.3 1.3 1.3',
+          dur: 400,
+          easing: 'easeOutElastic',
+          loop: 2
+        });
+        
+        // Success particles
+        const successParticles = document.createElement('a-entity');
+        successParticles.setAttribute('particle-system', {
+          preset: 'default',
+          color: '#00FF00, #FFFF00',
+          size: 0.8,
+          particleCount: 100,
+          maxAge: 2,
+          accelerationValue: '0 3 0',
+          accelerationSpread: '5 0 5'
+        });
+        successParticles.setAttribute('position', goal.getAttribute('position'));
+        document.querySelector('a-scene').appendChild(successParticles);
+        
+        setTimeout(() => {
+          if (successParticles && successParticles.parentNode) {
+            successParticles.parentNode.removeChild(successParticles);
+          }
+        }, 3000);
+        
+        // Update display
+        const display = document.querySelector('#state-display');
+        display.setAttribute('value', 'SUCCESS! GOAL REACHED!');
+        display.setAttribute('color', '#00FF00');
+      }
+    });
+
+    // Controller Interaction Component
+    AFRAME.registerComponent('controller-interaction', {
+      init: function() {
+        this.rotationSpeed = 0;
+        
+        this.el.addEventListener('triggerdown', (e) => {
+          const intersected = this.el.components.raycaster.intersectedEls[0];
+          if (intersected) {
+            this.handleInteraction(intersected);
+          }
+        });
+
+        this.el.addEventListener('gripdown', () => {
+          if (GameState.selectedTool && GameState.sceneReady) {
+            this.placeTool();
+          }
+        });
+
+        this.el.addEventListener('thumbstickmoved', (e) => {
+          this.rotationSpeed = e.detail.x * 5;
+        });
+        
+        this.el.addEventListener('thumbstickup', () => {
+          this.rotationSpeed = 0;
+        });
+      },
+
+      tick: function() {
+        if (this.heldObject && this.rotationSpeed !== 0) {
+          const rotation = this.heldObject.getAttribute('rotation');
+          rotation.y += this.rotationSpeed;
+          this.heldObject.setAttribute('rotation', rotation);
+        }
+      },
+
+      handleInteraction: function(el) {
+        console.log('🎯 Interaction with:', el.className);
+        
+        // Tool selection
+        if (el.classList.contains('tool-btn')) {
+          const tool = el.getAttribute('data-tool');
+          GameState.selectedTool = tool;
+          
+          console.log('🔧 Selected tool:', tool);
+          
+          // Visual feedback - reset all
+          document.querySelectorAll('.tool-btn').forEach(btn => {
+            const box = btn.querySelector('a-box');
+            if (box) {
+              box.setAttribute('scale', '1 1 1');
+              box.removeAttribute('animation__pulse');
+            }
+          });
+          
+          // Highlight selected
+          const selectedBox = el.querySelector('a-box');
+          if (selectedBox) {
+            selectedBox.setAttribute('scale', '1.15 1.15 1');
+            selectedBox.setAttribute('animation__pulse', {
+              property: 'scale',
+              to: '1.2 1.2 1',
+              dur: 500,
+              direction: 'alternate',
+              loop: true
+            });
+          }
+        }
+        
+        // Action buttons
+        if (el.id === 'btn-start' || el.parentEl.id === 'btn-start') {
+          this.startSimulation();
+        }
+        if (el.id === 'btn-reset' || el.parentEl.id === 'btn-reset') {
+          this.resetSimulation();
+        }
+      },
+
+      placeTool: function() {
+        if (!GameState.selectedTool || GameState.mode === 'play') {
+          console.log('❌ Cannot place: mode=' + GameState.mode);
+          return;
+        }
+
+        const container = document.querySelector('#tools-container');
+        const controller = this.el;
+        const pos = controller.object3D.position;
+        const rot = controller.object3D.rotation;
+        
+        // Calculate placement position
+        const forward = new THREE.Vector3(0, 0, -1);
+        forward.applyEuler(rot);
+        const placePos = pos.clone();
+        placePos.addScaledVector(forward, 2.5);
+        placePos.y = Math.max(0.3, placePos.y);
+
+        let tool;
+        
+        if (GameState.selectedTool === 'ramp') {
+          tool = document.createElement('a-entity');
+          
+          const ramp = document.createElement('a-box');
+          ramp.setAttribute('width', '2.5');
+          ramp.setAttribute('height', '0.25');
+          ramp.setAttribute('depth', '1.5');
+          ramp.setAttribute('color', '#34495E');
+          ramp.setAttribute('metalness', '0.8');
+          ramp.setAttribute('roughness', '0.4');
+          ramp.setAttribute('static-body', '');
+          tool.appendChild(ramp);
+          
+          // Orange glow edge
+          const edge = document.createElement('a-box');
+          edge.setAttribute('width', '2.6');
+          edge.setAttribute('height', '0.08');
+          edge.setAttribute('depth', '0.08');
+          edge.setAttribute('position', '0 0.16 0.75');
+          edge.setAttribute('color', '#FF6B35');
+          edge.setAttribute('shader', 'flat');
+          tool.appendChild(edge);
+          
+          tool.setAttribute('position', `${placePos.x} ${placePos.y} ${placePos.z}`);
+          tool.classList.add('placeable');
+          
+          console.log('✅ Placed RAMP');
+        }
+        
+        else if (GameState.selectedTool === 'fan') {
+          tool = document.createElement('a-entity');
+          
+          const base = document.createElement('a-box');
+          base.setAttribute('width', '0.7');
+          base.setAttribute('height', '0.7');
+          base.setAttribute('depth', '0.4');
+          base.setAttribute('color', '#2C3E50');
+          base.setAttribute('metalness', '0.8');
+          base.setAttribute('roughness', '0.3');
+          base.setAttribute('static-body', '');
+          tool.appendChild(base);
+          
+          // Fan blades
+          const blades = document.createElement('a-cylinder');
+          blades.setAttribute('radius', '0.3');
+          blades.setAttribute('height', '0.05');
+          blades.setAttribute('position', '0.4 0 0');
+          blades.setAttribute('rotation', '0 0 90');
+          blades.setAttribute('color', '#4ECDC4');
+          blades.setAttribute('shader', 'flat');
+          blades.setAttribute('animation', {
+            property: 'rotation',
+            to: '0 0 450',
+            dur: 1000,
+            easing: 'linear',
+            loop: true
+          });
+          tool.appendChild(blades);
+          
+          // Air stream particles
+          const particles = document.createElement('a-entity');
+          particles.setAttribute('particle-system', {
+            preset: 'dust',
+            color: '#4ECDC4',
+            size: 0.25,
+            particleCount: 40,
+            maxAge: 1,
+            velocityValue: '2 0 0',
+            velocitySpread: '0.3 0.3 0.3'
+          });
+          particles.setAttribute('position', '0.7 0 0');
+          tool.appendChild(particles);
+          
+          tool.setAttribute('position', `${placePos.x} ${placePos.y} ${placePos.z}`);
+          tool.setAttribute('fan-force', '');
+          tool.classList.add('placeable');
+          
+          console.log('✅ Placed FAN');
+        }
+        
+        else if (GameState.selectedTool === 'teleporter') {
+          // Entrance
+          const entrance = document.createElement('a-entity');
+          const entranceCyl = document.createElement('a-cylinder');
+          entranceCyl.setAttribute('radius', '0.7');
+          entranceCyl.setAttribute('height', '0.12');
+          entranceCyl.setAttribute('color', '#9B59B6');
+          entranceCyl.setAttribute('metalness', '0.9');
+          entranceCyl.setAttribute('roughness', '0.2');
+          entranceCyl.setAttribute('static-body', '');
+          entrance.appendChild(entranceCyl);
+          
+          const entranceParticles = document.createElement('a-entity');
+          entranceParticles.setAttribute('particle-system', {
+            preset: 'default',
+            color: '#9B59B6',
+            size: 0.4,
+            particleCount: 50,
+            maxAge: 1
+          });
+          entrance.appendChild(entranceParticles);
+          
+          entrance.setAttribute('position', `${placePos.x} ${placePos.y} ${placePos.z}`);
+          entrance.classList.add('placeable');
+          
+          // Exit
+          const exit = document.createElement('a-entity');
+          const exitCyl = document.createElement('a-cylinder');
+          exitCyl.setAttribute('radius', '0.7');
+          exitCyl.setAttribute('height', '0.12');
+          exitCyl.setAttribute('color', '#E91E63');
+          exitCyl.setAttribute('metalness', '0.9');
+          exitCyl.setAttribute('roughness', '0.2');
+          exitCyl.setAttribute('static-body', '');
+          exit.appendChild(exitCyl);
+          
+          const exitParticles = document.createElement('a-entity');
+          exitParticles.setAttribute('particle-system', {
+            preset: 'default',
+            color: '#E91E63',
+            size: 0.4,
+            particleCount: 50,
+            maxAge: 1
+          });
+          exit.appendChild(exitParticles);
+          
+          exit.setAttribute('position', `${placePos.x + 3} ${placePos.y} ${placePos.z + 3}`);
+          exit.classList.add('placeable');
+          exit.id = 'exit_' + Date.now();
+          
+          container.appendChild(entrance);
+          container.appendChild(exit);
+          
+          entrance.setAttribute('teleporter', `exit: #${exit.id}`);
+          
+          GameState.teleporters.push({entrance, exit});
+          console.log('✅ Placed TELEPORTER pair');
+          return;
+        }
+        
+        if (tool) {
+          container.appendChild(tool);
+          GameState.placedTools.push(tool);
+        }
+      },
+
+      startSimulation: function() {
+        if (GameState.mode === 'play') {
+          console.log('⚠️ Already in play mode');
+          return;
+        }
+        
+        console.log('▶️ Starting simulation...');
+        
+        GameState.mode = 'play';
+        GameState.goalReached = false;
+        
+        const display = document.querySelector('#state-display');
+        display.setAttribute('value', 'MODE: PLAY');
+        display.setAttribute('color', '#00FF00');
+        
+        // Spawn ball
+        const emitter = document.querySelector('#emitter');
+        const pos = emitter.getAttribute('position');
+        
+        const ball = document.createElement('a-sphere');
+        ball.setAttribute('radius', '0.4');
+        ball.setAttribute('color', '#FFFFFF');
+        ball.setAttribute('metalness', '1');
+        ball.setAttribute('roughness', '0.15');
+        ball.setAttribute('dynamic-body', 'mass: 1; shape: sphere; linearDamping: 0.05; angularDamping: 0.05');
+        ball.setAttribute('position', `${pos.x} ${pos.y + 1.5} ${pos.z}`);
+        ball.classList.add('ball');
+        
+        // Trail
+        const trail = document.createElement('a-entity');
+        trail.setAttribute('particle-system', {
+          preset: 'default',
+          color: '#FF6B35',
+          size: 0.15,
+          particleCount: 20,
+          maxAge: 0.4
+        });
+        ball.appendChild(trail);
+        
+        document.querySelector('#ball-container').appendChild(ball);
+        GameState.ball = ball;
+        
+        console.log('⚽ Ball spawned!');
+      },
+
+      resetSimulation: function() {
+        console.log('⟲ Resetting simulation...');
+        
+        GameState.mode = 'edit';
+        GameState.goalReached = false;
+        
+        const display = document.querySelector('#state-display');
+        display.setAttribute('value', 'MODE: EDIT');
+        display.setAttribute('color', '#00D9FF');
+        
+        if (GameState.ball && GameState.ball.parentNode) {
+          GameState.ball.parentNode.removeChild(GameState.ball);
+          GameState.ball = null;
+        }
+        
+        console.log('✅ Reset complete');
+      }
+    });
+
+    // Fan Force Component
+    AFRAME.registerComponent('fan-force', {
+      init: function() {
+        const zone = document.createElement('a-box');
+        zone.setAttribute('width', '3');
+        zone.setAttribute('height', '1.5');
+        zone.setAttribute('depth', '0.8');
+        zone.setAttribute('position', '1.8 0 0');
+        zone.setAttribute('opacity', '0');
+        zone.setAttribute('static-body', 'shape: box');
+        this.el.appendChild(zone);
+        
+        zone.addEventListener('collide', (e) => {
+          if (e.detail.body && e.detail.body.el && e.detail.body.el.classList.contains('ball')) {
+            this.applyForce(e.detail.body.el);
+          }
+        });
+        
+        console.log('💨 Fan force zone created');
+      },
+
+      applyForce: function(ball) {
+        const forceDir = new THREE.Vector3(1, 0, 0);
+        forceDir.applyQuaternion(this.el.object3D.quaternion);
+        
+        const body = ball.body;
+        if (body) {
+          const force = forceDir.multiplyScalar(25);
+          body.applyForce(
+            new CANNON.Vec3(force.x, force.y, force.z),
+            new CANNON.Vec3(0, 0, 0)
+          );
+        }
+      }
+    });
+
+    // Teleporter Component
+    AFRAME.registerComponent('teleporter', {
+      schema: {
+        exit: {type: 'selector'}
+      },
+      
+      init: function() {
+        this.el.addEventListener('collide', (e) => {
+          if (e.detail.body && e.detail.body.el && e.detail.body.el.classList.contains('ball') && this.data.exit) {
+            const exitPos = this.data.exit.getAttribute('position');
+            e.detail.body.el.setAttribute('position', `${exitPos.x} ${exitPos.y + 0.8} ${exitPos.z}`);
+            
+            console.log('🌀 Teleported!');
+            
+            this.el.setAttribute('animation__flash', {
+              property: 'scale',
+              to: '1.4 1.4 1.4',
+              dur: 200,
+              easing: 'easeOutQuad'
+            });
+          }
+        });
+      }
+    });
+  </script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
+</body>
+</html>
